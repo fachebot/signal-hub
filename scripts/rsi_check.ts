@@ -93,7 +93,7 @@ async function main() {
   const closes: number[] = await (() => {
     if (isLive) {
       console.log("模式: 实时 (币安 BTCUSDT 1h, limit=1000)");
-      return fetchLiveCloses("BTCUSDT", "1h", 1000);
+      return fetchLiveCloses("BTCUSDT", "1h", 500);
     } else {
       console.log("模式: 模拟数据 (100 根 K 线)");
       return simulateCloses(100);

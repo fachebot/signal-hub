@@ -41,7 +41,7 @@ export async function checkTimeframe(
   console.log(`[check] ${timeframe} starting at ${now.toISOString()}`);
 
   try {
-    const raw = await fetchKlines(config.symbol, timeframe, 1000);
+    const raw = await fetchKlines(config.symbol, timeframe, 500);
     const klines = filterClosedKlines(raw);
     const currentPrice = klines.length > 0 ? klines[klines.length - 1].close : 0;
 

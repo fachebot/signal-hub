@@ -27,7 +27,7 @@ import type { Kline, FvgSignal, RsiSignal } from "../src/types.js";
 async function fetchBinanceKlines(
   symbol: string,
   interval: string,
-  limit: number = 100,
+  limit: number = 500,
 ): Promise<Bar[]> {
   const baseUrl = "https://fapi.binance.com/fapi/v1/klines";
   const url = `${baseUrl}?symbol=${symbol}&interval=${interval}&limit=${limit}`;
@@ -217,7 +217,7 @@ async function main() {
   );
   console.log("  signal-hub  FVG / RSI 对比输出");
   if (useLive) {
-    console.log("  数据: 币安实时 1h BTC/USDT K 线 (limit=1000)");
+    console.log("  数据: 币安实时 1h BTC/USDT K 线 (limit=500)");
   } else {
     console.log("  数据: 模拟 15m BTC/USDT K 线");
   }
@@ -238,7 +238,7 @@ async function main() {
   let bars: Bar[];
   if (useLive) {
     console.log("→ 正在从币安获取 K 线数据 (BTC/USDT 1h)...");
-    bars = await fetchBinanceKlines("BTCUSDT", "1h", 100);
+    bars = await fetchBinanceKlines("BTCUSDT", "1h", 500);
     console.log(`  已获取 ${bars.length} 根 K 线`);
   } else {
     bars = generateSampleBars();
