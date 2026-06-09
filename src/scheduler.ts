@@ -1,0 +1,89 @@
+// 定时调度模块
+// 每 30 秒 tick 一次，根据当前分钟数决定检测哪个时间周期的信号：
+//   - 5m 检测：每分钟 :01/:06/:11...（分钟 % 5 === 1）
+//   - 15m 检测：每分钟 :01/:16/:31/:46（分钟 % 15 === 1）
+// 选择 :01 而非 :00 是为了给 K 线收盘留 1 分钟缓冲
+
+import type { AppConfig } from "./types.js";
+import { fetchKlines, filterClosedKlines } from "./binance.js";
+import { detectFvgs } from "./fvg.js";
+import { detectRsiSignals } from "./rsi.js";
+import { isNotified, markNotified, saveStore, fvgKey, rsiKey } from "./dedupe.js";
+import { notifyFvg, notifyRsi } from "./notify.js";
+
+/** 检测上下文：记录最后一轮检测的分针数，防止重复 */
+interface CheckContext {
+  lastM5: number;
+  lastM15: number;
+}
+
+const ctx: CheckContext = { lastM5: -1, lastM15: -1 };
+
+/**
+ * 检测指定时间周期的信号
+ * 流程：获取 K 线 -> 过滤已收盘 -> 检测 FVG + RSI -> 去重 -> 通知 -> 持久化
+ */
+export async function checkTimeframe(
+  timeframe: string,
+  intervalMinutes: number,
+  config: AppConfig,
+): Promise<void> {
+  const now = new Date();
+  const mins = now.getMinutes();
+
+  // 同一分钟内避免重复检测
+  if (intervalMinutes === 5 && mins % 5 === 1 && ctx.lastM5 === mins) return;
+  if (intervalMinutes === 15 && mins % 15 === 1 && ctx.lastM15 === mins) return;
+
+  if (intervalMinutes === 5) ctx.lastM5 = mins;
+  if (intervalMinutes === 15) ctx.lastM15 = mins;
+
+  console.log(`[check] ${timeframe} starting at ${now.toISOString()}`);
+
+  try {
+    const raw = await fetchKlines(config.symbol, timeframe, 1000);
+    const klines = filterClosedKlines(raw);
+    const currentPrice = klines.length > 0 ? klines[klines.length - 1].close : 0;
+
+    // FVG 信号检测与通知
+    const fvgs = detectFvgs(klines, timeframe, currentPrice, config.fvgMinGap);
+    for (const fvg of fvgs) {
+      const key = fvgKey(fvg);
+      if (isNotified(key)) continue;
+      markNotified(key);
+      await notifyFvg(config, fvg);
+    }
+
+    // RSI 信号检测与通知
+    const rsiSignals = detectRsiSignals(
+      klines, timeframe, currentPrice,
+      config.rsiPeriod, config.rsiOverbought, config.rsiOversold,
+    );
+    for (const signal of rsiSignals) {
+      const key = rsiKey(signal);
+      if (isNotified(key)) continue;
+      markNotified(key);
+      await notifyRsi(config, signal);
+    }
+
+    saveStore();
+  } catch (err) {
+    console.error(`[check] ${timeframe} error:`, err);
+  }
+}
+
+/** 启动定时检测器 */
+export function startChecker(config: AppConfig): void {
+  setInterval(() => {
+    const mins = new Date().getMinutes();
+
+    if (mins % 5 === 1) {
+      checkTimeframe("5m", 5, config);
+    }
+    if (mins % 15 === 1) {
+      checkTimeframe("15m", 15, config);
+    }
+  }, 30_000);
+
+  console.log(`[scheduler] started, checking 5m (every :01/:06/... ) and 15m (every :01/:16/... )`);
+}
