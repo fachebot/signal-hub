@@ -66,8 +66,8 @@ async function main() {
   const finF1 = filterClosedKlines(rawF1);
 
   console.log("Data sizes:");
-  console.log("  fapi raw=%.0f, closed=%.0f (dropped %.0f unclosed)", rawF.length, finF.length, rawF.length - finF.length);
-  console.log("  spot raw=%.0f, closed=%.0f", rawS.length, finS.length);
+  console.log("  fapi raw=" + rawF.length + ", closed=" + finF.length + " (dropped " + (rawF.length - finF.length) + " unclosed)");
+  console.log("  spot raw=" + rawS.length + ", closed=" + finS.length);
   console.log("");
 
   // 多种方式计算
@@ -81,16 +81,17 @@ async function main() {
   ];
 
   const minN = Math.min(...ms.map(m => m.values.length));
-  const st = Math.max(0, minN - show);
 
   // 表头
   const hdr = ms.map(m => pad(m.label, 16)).join(" | ");
-  console.log("Last %.0f values:", show);
+  console.log("Last " + show + " values:");
   console.log("  " + "-".repeat(hdr.length));
   console.log("  " + hdr);
   console.log("  " + "-".repeat(hdr.length));
-  for (let i = st; i < minN; i++) {
-    console.log("  " + ms.map(m => pad(fmt(m.values[i]), 16)).join(" | "));
+  const showCount = Math.min(show, minN);
+  for (let i = 0; i < showCount; i++) {
+    const row = ms.map(m => { const idx = m.values.length - showCount + i; return pad(fmt(m.values[idx]), 16); }).join(" | ");
+    console.log("  " + row);
   }
   console.log("  " + "-".repeat(hdr.length));
   console.log("");
@@ -100,15 +101,16 @@ async function main() {
   console.log("Diff vs fapi1000过滤:");
   for (let i = 1; i < ms.length; i++) {
     const n = Math.min(base.length, ms[i].values.length);
+    const baseOff = base.length - n;
+    const otherOff = ms[i].values.length - n;
     const d = [];
-    for (let j = 0; j < n; j++) d.push(Math.abs(base[j] - ms[i].values[j]));
+    for (let j = 0; j < n; j++) d.push(Math.abs(base[baseOff + j] - ms[i].values[otherOff + j]));
     const avg = d.reduce((a,b)=>a+b,0)/d.length;
     const mx = Math.max(...d);
     const tl = d.slice(-show);
     const ta = tl.reduce((a,b)=>a+b,0)/tl.length;
     const tm = Math.max(...tl);
-    console.log("  %s: avg=%.4f max=%.4f tail30_avg=%.4f tail30_max=%.4f",
-      pad(ms[i].label, 16), avg, mx, ta, tm);
+    console.log("  " + pad(ms[i].label, 16) + ": avg=" + avg.toFixed(4) + " max=" + mx.toFixed(4) + " tail30_avg=" + ta.toFixed(4) + " tail30_max=" + tm.toFixed(4));
   }
   console.log("");
 
