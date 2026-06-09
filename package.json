@@ -10,7 +10,8 @@
         "test:watch": "vitest",
         "rsi-check": "tsx scripts/rsi_check.ts",
         "compare": "tsx scripts/compare_output.ts",
-        "compare:live": "tsx scripts/compare_output.ts --live"
+        "compare:live": "tsx scripts/compare_output.ts --live",
+        "rsi-debug": "tsx scripts/rsi_debug.ts"
     },
     "devDependencies": {
         "@types/node": "^25.9.1",
