@@ -14,6 +14,7 @@
  *   [RSI]  RSI 超买/超卖穿越信号（仅实时数据模式）
  */
 
+import { fetchKlines, filterClosedKlines } from "../src/binance.js";
 import { calculateRsi, detectRsiSignals } from "../src/rsi.js";
 import { detectFvgs } from "../src/fvg.js";
 import type { Kline, FvgSignal, RsiSignal } from "../src/types.js";
@@ -216,7 +217,7 @@ async function main() {
   );
   console.log("  signal-hub  FVG / RSI 对比输出");
   if (useLive) {
-    console.log("  数据: 币安实时 1h BTC/USDT K 线");
+    console.log("  数据: 币安实时 1h BTC/USDT K 线 (limit=1000)");
   } else {
     console.log("  数据: 模拟 15m BTC/USDT K 线");
   }
