@@ -46,7 +46,9 @@ export async function checkTimeframe(
     const currentPrice = klines.length > 0 ? klines[klines.length - 1].close : 0;
 
     // FVG 信号检测与通知
-    const fvgs = detectFvgs(klines, timeframe, currentPrice, config.fvgMinGap);
+    // 只检测最近 10 根 K 线，避免首次运行时扫描全部历史产生几十条重复通知
+    const recentKlines = klines.slice(-10);
+    const fvgs = detectFvgs(recentKlines, timeframe, currentPrice, config.fvgMinGap);
     for (const fvg of fvgs) {
       const key = fvgKey(fvg);
       if (isNotified(key)) continue;
