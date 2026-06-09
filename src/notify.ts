@@ -125,8 +125,7 @@ export async function notifyFvg(
   config: AppConfig,
   signal: FvgSignal,
 ): Promise<void> {
-  const direction =
-    signal.direction === "bullish" ? "🟢 看涨" : "🔴 看跌";
+  const direction = signal.direction === "bullish" ? "🟢 看涨" : "🔴 看跌";
   const time = new Date(signal.candleCloseTime).toLocaleString("zh-CN", {
     timeZone: "Asia/Shanghai",
   });
@@ -136,7 +135,7 @@ export async function notifyFvg(
     "",
     `当前价格: ${signal.currentPrice} USDT`,
     `FVG 范围: ${signal.gapLow} - ${signal.gapHigh}（缺口 ${signal.gapSize} USDT）`,
-    `K线时间: ${time}`,
+    `收盘时间: ${time}`,
   ].join("\n");
 
   for (const userId of config.larkUrgentUserIds) {
@@ -157,8 +156,7 @@ export async function notifyRsi(
   config: AppConfig,
   signal: RsiSignal,
 ): Promise<void> {
-  const direction =
-    signal.direction === "overbought" ? "🔴 超买" : "🟢 超卖";
+  const direction = signal.direction === "overbought" ? "🔴 超买" : "🟢 超卖";
   const time = new Date(signal.candleCloseTime).toLocaleString("zh-CN", {
     timeZone: "Asia/Shanghai",
   });
@@ -168,7 +166,7 @@ export async function notifyRsi(
     "",
     `当前价格: ${signal.currentPrice} USDT`,
     `RSI 值: ${signal.rsiValue}`,
-    `K线时间: ${time}`,
+    `收盘时间: ${time}`,
   ].join("\n");
 
   for (const userId of config.larkUrgentUserIds) {
