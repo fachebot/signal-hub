@@ -30,11 +30,17 @@ async function getToken(config: AppConfig): Promise<string> {
     return cachedToken.token;
   }
 
-  const resp = await fetch(`${config.larkBaseUrl}/open-apis/auth/v3/tenant_access_token/internal`, {
-    method: "POST",
-    headers: { "content-type": "application/json; charset=utf-8" },
-    body: JSON.stringify({ app_id: config.larkAppId, app_secret: config.larkAppSecret }),
-  });
+  const resp = await fetch(
+    `${config.larkBaseUrl}/open-apis/auth/v3/tenant_access_token/internal`,
+    {
+      method: "POST",
+      headers: { "content-type": "application/json; charset=utf-8" },
+      body: JSON.stringify({
+        app_id: config.larkAppId,
+        app_secret: config.larkAppSecret,
+      }),
+    },
+  );
 
   const data = (await resp.json()) as TokenResponse;
   if (data.code !== 0 || !data.tenant_access_token) {
@@ -66,7 +72,7 @@ async function sendMessage(
     {
       method: "POST",
       headers: {
-        "authorization": `Bearer ${token}`,
+        authorization: `Bearer ${token}`,
         "content-type": "application/json; charset=utf-8",
       },
       body: JSON.stringify({
@@ -102,7 +108,7 @@ async function urgentApp(
     {
       method: "PATCH",
       headers: {
-        "authorization": `Bearer ${token}`,
+        authorization: `Bearer ${token}`,
         "content-type": "application/json; charset=utf-8",
       },
       body: JSON.stringify({ user_id_list: [userId] }),
@@ -115,9 +121,15 @@ async function urgentApp(
 }
 
 /** 发送 FVG 信号通知（含紧急推送） */
-export async function notifyFvg(config: AppConfig, signal: FvgSignal): Promise<void> {
-  const direction = signal.direction === "bullish" ? "\U0001f7e2 看涨" : "\U0001f534 看跌";
-  const time = new Date(signal.candleCloseTime).toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" });
+export async function notifyFvg(
+  config: AppConfig,
+  signal: FvgSignal,
+): Promise<void> {
+  const direction =
+    signal.direction === "bullish" ? "🟢 看涨" : "🔴 看跌";
+  const time = new Date(signal.candleCloseTime).toLocaleString("zh-CN", {
+    timeZone: "Asia/Shanghai",
+  });
 
   const text = [
     `${direction} BTC/USDT ${signal.timeframe} FVG`,
@@ -131,7 +143,9 @@ export async function notifyFvg(config: AppConfig, signal: FvgSignal): Promise<v
     try {
       const msgId = await sendMessage(config, userId, text);
       await urgentApp(config, msgId, userId);
-      console.log(`[notify] fvg ${signal.direction} ${signal.timeframe} sent to ${userId}`);
+      console.log(
+        `[notify] fvg ${signal.direction} ${signal.timeframe} sent to ${userId}`,
+      );
     } catch (err) {
       console.error(`[notify] fvg failed for ${userId}:`, err);
     }
@@ -139,9 +153,15 @@ export async function notifyFvg(config: AppConfig, signal: FvgSignal): Promise<v
 }
 
 /** 发送 RSI 信号通知（含紧急推送） */
-export async function notifyRsi(config: AppConfig, signal: RsiSignal): Promise<void> {
-  const direction = signal.direction === "overbought" ? "\U0001f534 超买" : "\U0001f7e2 超卖";
-  const time = new Date(signal.candleCloseTime).toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" });
+export async function notifyRsi(
+  config: AppConfig,
+  signal: RsiSignal,
+): Promise<void> {
+  const direction =
+    signal.direction === "overbought" ? "🔴 超买" : "🟢 超卖";
+  const time = new Date(signal.candleCloseTime).toLocaleString("zh-CN", {
+    timeZone: "Asia/Shanghai",
+  });
 
   const text = [
     `${direction} BTC/USDT ${signal.timeframe} RSI`,
@@ -155,7 +175,9 @@ export async function notifyRsi(config: AppConfig, signal: RsiSignal): Promise<v
     try {
       const msgId = await sendMessage(config, userId, text);
       await urgentApp(config, msgId, userId);
-      console.log(`[notify] rsi ${signal.direction} ${signal.timeframe} sent to ${userId}`);
+      console.log(
+        `[notify] rsi ${signal.direction} ${signal.timeframe} sent to ${userId}`,
+      );
     } catch (err) {
       console.error(`[notify] rsi failed for ${userId}:`, err);
     }
