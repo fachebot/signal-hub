@@ -1,8 +1,7 @@
 // 定时调度模块
 // 每 30 秒 tick 一次，根据当前分钟数决定检测哪个时间周期的信号：
-//   - 5m 检测：每分钟 :01/:06/:11...（分钟 % 5 === 1）
-//   - 15m 检测：每分钟 :01/:16/:31/:46（分钟 % 15 === 1）
-// 选择 :01 而非 :00 是为了给 K 线收盘留 1 分钟缓冲
+//   - 5m 检测：每分钟 :00/:05/:10...（分钟 % 5 === 0）
+//   - 15m 检测：每分钟 :00/:15/:30/:45（分钟 % 15 === 0）
 
 import type { AppConfig } from "./types.js";
 import { fetchKlines, filterClosedKlines } from "./binance.js";
@@ -32,8 +31,8 @@ export async function checkTimeframe(
   const mins = now.getMinutes();
 
   // 同一分钟内避免重复检测
-  if (intervalMinutes === 5 && mins % 5 === 1 && ctx.lastM5 === mins) return;
-  if (intervalMinutes === 15 && mins % 15 === 1 && ctx.lastM15 === mins) return;
+  if (intervalMinutes === 5 && mins % 5 === 0 && ctx.lastM5 === mins) return;
+  if (intervalMinutes === 15 && mins % 15 === 0 && ctx.lastM15 === mins) return;
 
   if (intervalMinutes === 5) ctx.lastM5 = mins;
   if (intervalMinutes === 15) ctx.lastM15 = mins;
@@ -79,13 +78,13 @@ export function startChecker(config: AppConfig): void {
   setInterval(() => {
     const mins = new Date().getMinutes();
 
-    if (mins % 5 === 1) {
+    if (mins % 5 === 0) {
       checkTimeframe("5m", 5, config);
     }
-    if (mins % 15 === 1) {
+    if (mins % 15 === 0) {
       checkTimeframe("15m", 15, config);
     }
   }, 30_000);
 
-  console.log(`[scheduler] started, checking 5m (every :01/:06/... ) and 15m (every :01/:16/... )`);
+  console.log(`[scheduler] started, checking 5m (every :00/:05/... ) and 15m (every :00/:15/... )`);
 }
