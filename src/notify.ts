@@ -134,9 +134,9 @@ export async function notifyFvg(
   const text = [
     `${direction} BTC/USDT ${signal.timeframe} FVG`,
     "",
-    `\u5f53\u524d\u4ef7\u683c: ${signal.currentPrice} USDT`,
-    `FVG \u8303\u56f4: ${signal.gapLow} - ${signal.gapHigh}（\u7f3a\u53e3 ${signal.gapSize} USDT）`,
-    `K\u7ebf\u65f6\u95f4: ${time}`,
+    `当前价格: ${signal.currentPrice} USDT`,
+    `FVG 范围: ${signal.gapLow} - ${signal.gapHigh}（缺口 ${signal.gapSize} USDT）`,
+    `K线时间: ${time}`,
   ].join("\n");
 
   for (const userId of config.larkUrgentUserIds) {
@@ -166,9 +166,9 @@ export async function notifyRsi(
   const text = [
     `${direction} BTC/USDT ${signal.timeframe} RSI`,
     "",
-    `\u5f53\u524d\u4ef7\u683c: ${signal.currentPrice} USDT`,
-    `RSI \u503c: ${signal.rsiValue}`,
-    `K\u7ebf\u65f6\u95f4: ${time}`,
+    `当前价格: ${signal.currentPrice} USDT`,
+    `RSI 值: ${signal.rsiValue}`,
+    `K线时间: ${time}`,
   ].join("\n");
 
   for (const userId of config.larkUrgentUserIds) {
