@@ -156,7 +156,7 @@ export async function notifyRsi(
   config: AppConfig,
   signal: RsiSignal,
 ): Promise<void> {
-  const direction = signal.direction === "overbought" ? "🔴 超买" : "🟢 超卖";
+  const direction = signal.direction === "overbought" ? "🟢 超买" : "🔴 超卖";
   const time = new Date(signal.candleCloseTime).toLocaleString("zh-CN", {
     timeZone: "Asia/Shanghai",
   });
